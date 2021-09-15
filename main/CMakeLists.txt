@@ -1,2 +1,2 @@
-idf_component_register(SRCS "main.c" "strss.c" "interpret_cmd.c" "commands.c"
+idf_component_register(SRCS "timer_isr.c"
   INCLUDE_DIRS ".")
