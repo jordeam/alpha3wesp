@@ -5,19 +5,19 @@
   Outputs:
   GPIO2: internal LED
   GPIO16: Oscilator 40kHz,
-  G1P, G2P and G3P: positive semicycle phases 1, 2 and 3,
-  G1N, G2N and G3N: negative senicycle phases 1, 2 and 3
+  Gate1, Gate3 and Gate5: positive semicycle phases 1, 2 and 3,
+  Gate4, Gate6 and Gate2: negative senicycle phases 1, 2 and 3
 */
 
 #define LED_GPIO 2
 #define OSC60 15
 #define OSC40K 16
-#define G1P 17
-#define G2P 18
-#define G3P 19
-#define G1N 25
-#define G2N 26
-#define G3N 27
+#define GATE1 17
+#define GATE3 18
+#define GATE5 19
+#define GATE4 25
+#define GATE6 26
+#define GATE2 27
 
 #define SIGINT 14
 #define SIGAD 33

@@ -72,7 +72,7 @@ void ledc_pwm_config(void) {
 #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32C3
     ledc_channel_config_t ledc_channel_0 = {
       .channel    = LEDC_LS_CH0_CHANNEL,
-      .duty       = (int)((1 << 10) * 0.4),
+      .duty       = (int)((1 << 10) * 0.45),
       .gpio_num   = LEDC_LS_CH0_GPIO,
       .speed_mode = LEDC_LS_MODE,
       .hpoint     = 0,
