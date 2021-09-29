@@ -510,8 +510,8 @@ Wire Wire Line
 	6050 1550 5750 1550
 Text GLabel 5750 1550 0    50   Input ~ 0
 ALPHA
-Text Notes 5450 1450 0    50   ~ 0
-0 .. 2.5V\n0 .. 180°
+Text Notes 5250 1450 0    50   ~ 0
+From Arduino DA:\n0 .. 2.5V\n0 .. 180°
 $Comp
 L Device:R R3
 U 1 1 6164F596

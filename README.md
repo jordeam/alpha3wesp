@@ -29,4 +29,9 @@ An input of voltage from 0 to 2.5V means o to 180 degrees of trigger for each SC
 ## TODO
 
 - accept inputs from UART, SPI, I2C, CAN and pulse width.
+- implement reversion capability for AC three-phase controllers.
 - as always, improve docs...
+
+## Thanks
+
+To all free software developers, thank you!
