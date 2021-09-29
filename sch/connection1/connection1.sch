@@ -103,9 +103,6 @@ Connection ~ 3700 2150
 Wire Wire Line
 	3700 2150 4100 2150
 Wire Wire Line
-	3350 2550 3700 2550
-Connection ~ 3700 2550
-Wire Wire Line
 	3700 2550 4100 2550
 Connection ~ 4100 2550
 Wire Wire Line
@@ -502,9 +499,9 @@ Text Label 3600 5100 0    50   ~ 0
 FA
 Text Label 3600 5250 0    50   ~ 0
 FB
-Text Label 2400 2150 0    50   ~ 0
-FA
 Text Label 2400 2550 0    50   ~ 0
+FA
+Text Label 2400 2150 0    50   ~ 0
 FB
 Wire Wire Line
 	6050 1550 5750 1550
@@ -735,4 +732,17 @@ Text Notes 3150 2350 0    50   ~ 0
 9V / 10mA
 Text Notes 2550 2350 0    50   ~ 0
 220V
+Wire Notes Line
+	2550 2650 2550 2000
+Wire Notes Line
+	2550 2000 2350 2000
+Wire Notes Line
+	2350 2000 2350 2650
+Wire Notes Line
+	2350 2650 2550 2650
+Text Notes 1350 2450 0    50   ~ 10
+Attention here:\nLM311 in open collector\ninverts signal, so\nthe phases are inverted!!
+Connection ~ 3700 2550
+Wire Wire Line
+	3350 2550 3700 2550
 $EndSCHEMATC
