@@ -20,3 +20,13 @@ The device works in 50Hz or 60Hz automatically.
 
 SCR power bridge has its positive cycle devices tagged as Q1, for phase a, Q3 for phase b, and Q5 for phase c. The negative cycle for phase a is SCR number 4 (Q4), for phase b is Q6 and for phase c is Q2. This produces a trigger sequence in order, from Q1 to Q6.
 
+## Circuit Example
+
+An example of usage can be seen in [circuit-1](doc/example-circuit-1.pdf). In that circuit, a triphase full-bridge (or two way) rectifier is shown. Note the numbering of thyristors Q1 to Q6, it is very important to match with the ESP32 outputs. Also, certify that phases A, B and C are in the right sequence. For simplification, only one Gate Driver block is show, but it needs to be one for each thyristor.
+
+An input of voltage from 0 to 2.5V means o to 180 degrees of trigger for each SCR.
+
+## TODO
+
+- accept inputs from UART, SPI, I2C, CAN and pulse width.
+- as always, improve docs...
