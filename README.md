@@ -14,7 +14,7 @@ Triphase trigger angle control using ESP32
 | 26 | Gate of SCR 6 (Q6) |
 | 27 | Gate of SCR 2 (Q2) |
 | 4  | Grid Synchronism input |
-| 34 | Analog input for alpha trigger angle |
+| 36 | Analog input for alpha trigger angle |
 
 The device works in 50Hz or 60Hz automatically.
 

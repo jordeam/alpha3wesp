@@ -50,7 +50,7 @@ void adc_config(void) {
     check_efuse();
 
     adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(ADC_CHANNEL_0, ADC_ATTEN_DB_0);
+    adc1_config_channel_atten(ADC_CHANNEL_0, ADC_ATTEN_DB_11);
 
     //Characterize ADC
     adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));

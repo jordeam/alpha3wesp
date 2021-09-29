@@ -173,6 +173,15 @@ void led_task(void * pvParams) {
   }
 }
 
+void alpha_task(void * pvParams) {
+  int val;
+  for (;;) {
+    val = adc_get_raw(/* GPIO36 */ ADC_CHANNEL_0);
+    alpha = 180.0f * val / (1 << 12);
+    vTaskDelay(pdMS_TO_TICKS(20));
+  }
+}
+
 void app_main()
 {
   /* init GPIOs */
@@ -208,6 +217,7 @@ void app_main()
   /* alpha for test purposes */
   alpha = 120;
 
+  xTaskCreate(alpha_task, "alpha_task", 4096, NULL, 5, NULL);
   xTaskCreate(led_task, "led_task", 4096, NULL, 5, NULL);
   xTaskCreate(eval_triggers, "eval_triggers", 4096, NULL, 4, NULL);
 }

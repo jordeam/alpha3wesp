@@ -27,7 +27,7 @@
    ADC_GPIO: ADC input angle
 */
 #define SYNC_GPIO 4
-#define ADC_GPIO 34
+#define ADC_GPIO 36 // ADC_CHANNEL_0
 
 #define port_bit(x) (1ULL<<x)
 
