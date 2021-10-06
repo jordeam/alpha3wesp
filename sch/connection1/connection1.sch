@@ -573,7 +573,7 @@ F 1 "ZENER 12V" V 8395 4880 50  0000 L CNN
 F 2 "Diode_SMD:D_SOD-523" H 8350 4625 50  0001 C CNN
 F 3 "https://industrial.panasonic.com/content/data/SC/ds/ds4/DZ2S15000L_E.pdf" H 8350 4800 50  0001 C CNN
 	1    8350 4800
-	0    1    1    0   
+	0    -1   -1   0   
 $EndComp
 $Comp
 L Device:R R5
