@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -8,6 +10,7 @@
 #include "esp_attr.h"
 #include "driver/timer.h"
 #include "driver/gpio.h"
+#include "driver/ledc.h"
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 
@@ -16,12 +19,11 @@
 #include "adc_mod.h"
 
 #define GPIO_OUTPUT_PIN_SEL  (port_bit(LED_GPIO) | \
-                              port_bit(GATE1) | port_bit(GATE3) | \
-                              port_bit(GATE5) | port_bit(GATE4) | \
-                              port_bit(GATE6) | port_bit(GATE2) | \
                               port_bit(SIGINT) | port_bit(SIGAD))
 
 #define GPIO_INPUT_PIN_SEL  (port_bit(SYNC_GPIO) | port_bit(ADC_GPIO))
+
+#define GATE_DUTY ((int)((1 << 10) * 0.4))
 
 int sync;
 int cnt, cnt_max = -1;
@@ -29,16 +31,21 @@ int cnt, cnt_max = -1;
 int cnt_max_e = 0;
 
 /* the transitions */
-int gate_1_rise, gate_1_fall, gate_2_rise, gate_2_fall,
-  gate_3_rise, gate_3_fall, gate_4_rise, gate_4_fall,
-  gate_5_rise, gate_5_fall, gate_6_rise, gate_6_fall;
+struct tr {
+  int rise[6], fall[6];
+};
+
+typedef struct tr tr_t;
+
+tr_t gate;
 
 static intr_handle_t s_timer_handle;
 /* the alpha trigger angle in degrees */
-float alpha = 180;
+float alpha = 60;
 
 static void timer_isr(void* arg) {
   static int sync_old = 1;
+  static tr_t g;
 
   gpio_set_level(SIGINT, 1);
 
@@ -56,19 +63,39 @@ static void timer_isr(void* arg) {
     else {
       cnt_max += cnt;
       cnt_max >>= 1;
+      memcpy(&g, &gate, sizeof(tr_t));
+
       /* Verify if Gates 4, 5 and 6 are higher than cnt */
-      if (gate_4_fall >= cnt)
-        gpio_set_level(GATE4, 0);
-      if (gate_5_fall >= cnt)
-        gpio_set_level(GATE5, 0);
-      if (gate_6_fall >= cnt)
-        gpio_set_level(GATE6, 0);
-      if (gate_5_rise >= cnt)
-        gpio_set_level(GATE5, 1);
-      if (gate_4_fall >= cnt)
-        gpio_set_level(GATE4, 0);
-      if (gate_6_rise >= cnt)
-        gpio_set_level(GATE6, 1);
+      if (g.fall[3] >= cnt) {
+        /* gpio_set_level(GATE4, 0); */
+        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_4, 0);
+        ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_4);
+      }
+      if (g.fall[4] >= cnt) {
+        /* gpio_set_level(GATE5, 0); */
+        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_5, 0);
+        ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_5);
+      }
+      if (g.fall[5] >= cnt) {
+        /* gpio_set_level(GATE6, 0); */
+        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_6, 0);
+        ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_6);
+      }
+      if (g.rise[4] >= cnt) {
+        /* gpio_set_level(GATE5, 1); */
+        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_5, GATE_DUTY);
+        ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_5);
+      }
+      if (g.fall[3] >= cnt) {
+        /* gpio_set_level(GATE4, 0); */
+        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_4, 0);
+        ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_4);
+      }
+      if (g.rise[5] >= cnt) {
+        /* gpio_set_level(GATE6, 1); */
+        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_6, GATE_DUTY);
+        ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_6);
+      }
     }
     cnt = 0;
   }
@@ -76,30 +103,66 @@ static void timer_isr(void* arg) {
   /* do nothing if counter maximum is equal or less than zero*/
   if (cnt_max > 0) {
     /* refresh output pins */
-    if (cnt == gate_1_rise)
-      gpio_set_level(GATE1, 1);
-    else if (cnt == gate_1_fall)
-      gpio_set_level(GATE1, 0);
-    if (cnt == gate_2_rise)
-      gpio_set_level(GATE2, 1);
-    else if (cnt == gate_2_fall)
-      gpio_set_level(GATE2, 0);
-    if (cnt == gate_3_rise)
-      gpio_set_level(GATE3, 1);
-    else if (cnt == gate_3_fall)
-      gpio_set_level(GATE3, 0);
-    if (cnt == gate_4_rise)
-      gpio_set_level(GATE4, 1);
-    else if (cnt == gate_4_fall)
-      gpio_set_level(GATE4, 0);
-    if (cnt == gate_5_rise)
-      gpio_set_level(GATE5, 1);
-    else if (cnt == gate_5_fall)
-      gpio_set_level(GATE5, 0);
-    if (cnt == gate_6_rise)
-      gpio_set_level(GATE6, 1);
-    else if (cnt == gate_6_fall)
-      gpio_set_level(GATE6, 0);
+    if (cnt == g.rise[0]) {
+      /* gpio_set_level(GATE1, 1); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1, GATE_DUTY);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
+    }
+    else if (cnt == g.fall[0]) {
+      /* gpio_set_level(GATE1, 0); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1, 0);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
+    }
+    if (cnt == g.rise[1]) {
+      /* gpio_set_level(GATE2, 1); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_2, GATE_DUTY);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_2);
+    }
+    else if (cnt == g.fall[1]) {
+      /* gpio_set_level(GATE2, 0); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_2, 0);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_2);
+    }
+    if (cnt == g.rise[2]) {
+      /* gpio_set_level(GATE3, 1); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_3, GATE_DUTY);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_3);
+    }
+    else if (cnt == g.fall[2]) {
+      /* gpio_set_level(GATE3, 0); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_3, 0);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_3);
+    }
+    if (cnt == g.rise[3]) {
+      /* gpio_set_level(GATE4, 1); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_4, GATE_DUTY);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_4);
+    }
+    else if (cnt == g.fall[3]) {
+      /* gpio_set_level(GATE4, 0); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_4, 0);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_4);
+    }
+    if (cnt == g.rise[4]) {
+      /* gpio_set_level(GATE5, 1); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_5, GATE_DUTY);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_5);
+    }
+    else if (cnt == g.fall[4]) {
+      /* gpio_set_level(GATE5, 0); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_5, 0);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_5);
+    }
+    if (cnt == g.rise[5]) {
+      /* gpio_set_level(GATE6, 1); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_6, GATE_DUTY);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_6);
+    }
+    else if (cnt == g.fall[5]) {
+      /* gpio_set_level(GATE6, 0); */
+      ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_6, 0);
+      ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_6);
+    }
   }
 
   /* increment counter */
@@ -137,28 +200,30 @@ void eval_triggers(void * pvParams) {
     int val = adc1_get_raw(ADC1_CHANNEL_0);
     gpio_set_level(SIGAD, 0);
 
+    alpha = 180.0f * val / (1 << 12);
+    alpha = 60.0f;
     cnt_max_e = cnt_max;
     /* verify if it detected the first sync pulse */
     if (cnt_max_e != 0) {
       if (alpha > 180.0f)
         alpha = 180.0f;
       float alpha_n = alpha / 360.0;
-      gate_1_rise = cnt_max_e * alpha_n;
-      gate_1_fall = cnt_max_e * 0.5;
-      gate_2_rise = cnt_max_e * (alpha_n + 0.1666);
-      gate_2_fall = cnt_max_e * 0.6666;
-      gate_3_rise = cnt_max_e * (alpha_n + 0.3333);
-      gate_3_fall = cnt_max_e * 0.8333;
-      gate_4_rise = cnt_max_e * (alpha_n + 0.5);
-      gate_4_fall = cnt_max_e - 1;
-      gate_5_rise = cnt_max_e * (alpha_n + 0.6666);
-      if (gate_5_rise >= cnt_max_e)
-        gate_5_rise -= cnt_max_e;
-      gate_5_fall = cnt_max_e * 0.1666;
-      gate_6_rise = cnt_max_e * (alpha_n + 0.8333);
-      if (gate_6_rise >= cnt_max_e)
-        gate_6_rise -= cnt_max_e;
-      gate_6_fall = cnt_max_e * 0.3333;
+      gate.rise[0] = cnt_max_e * alpha_n;
+      gate.fall[0] = cnt_max_e * 0.5;
+      gate.rise[1] = cnt_max_e * (alpha_n + 0.1666);
+      gate.fall[1] = cnt_max_e * 0.6666;
+      gate.rise[2] = cnt_max_e * (alpha_n + 0.3333);
+      gate.fall[2] = cnt_max_e * 0.8333;
+      gate.rise[3] = cnt_max_e * (alpha_n + 0.5);
+      gate.fall[3] = cnt_max_e - 1;
+      gate.rise[4] = cnt_max_e * (alpha_n + 0.6666);
+      if (gate.rise[4] >= cnt_max_e)
+        gate.rise[4] -= cnt_max_e;
+      gate.fall[4] = cnt_max_e * 0.1666;
+      gate.rise[5] = cnt_max_e * (alpha_n + 0.8333);
+      if (gate.rise[5] >= cnt_max_e)
+        gate.rise[5] -= cnt_max_e;
+      gate.fall[5] = cnt_max_e * 0.3333;
     }
 
     /* wait for something ? */
@@ -170,15 +235,6 @@ void led_task(void * pvParams) {
   for (int cnt = 0;;cnt = !cnt) {
     vTaskDelay(pdMS_TO_TICKS(200));
     gpio_set_level(LED_GPIO, cnt % 2);
-  }
-}
-
-void alpha_task(void * pvParams) {
-  int val;
-  for (;;) {
-    val = adc_get_raw(/* GPIO36 */ ADC_CHANNEL_0);
-    alpha = 180.0f * val / (1 << 12);
-    vTaskDelay(pdMS_TO_TICKS(20));
   }
 }
 
@@ -217,7 +273,6 @@ void app_main()
   /* alpha for test purposes */
   alpha = 120;
 
-  xTaskCreate(alpha_task, "alpha_task", 4096, NULL, 5, NULL);
   xTaskCreate(led_task, "led_task", 4096, NULL, 5, NULL);
   xTaskCreate(eval_triggers, "eval_triggers", 4096, NULL, 4, NULL);
 }
