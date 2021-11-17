@@ -1,2 +1,6 @@
 /build/
 /sdkconfig
+*-cache.*
+*.sch-bak
+*-cache
+*.bck
