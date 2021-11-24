@@ -759,4 +759,22 @@ F 3 "" H 4900 3400 50  0001 C CNN
 	1    4900 3400
 	1    0    0    -1  
 $EndComp
+<<<<<<< HEAD:sch/connection1/connection1.sch
+=======
+Wire Wire Line
+	8200 2850 8300 2850
+Wire Wire Line
+	8300 2850 8300 2700
+$Comp
+L power:+3.3V #PWR?
+U 1 1 61B900CE
+P 8300 2700
+F 0 "#PWR?" H 8300 2550 50  0001 C CNN
+F 1 "+3.3V" H 8315 2873 50  0000 C CNN
+F 2 "" H 8300 2700 50  0001 C CNN
+F 3 "" H 8300 2700 50  0001 C CNN
+	1    8300 2700
+	1    0    0    -1  
+$EndComp
+>>>>>>> 0ef5d8d (Updating...):sch/connection1.sch
 $EndSCHEMATC
