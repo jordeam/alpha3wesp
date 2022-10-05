@@ -4,3 +4,7 @@
 *.sch-bak
 *-cache
 *.bck
+/sch/connection2.kicad_prl
+/sch/connection1-backups/
+/sch/connection1.kicad_prl
+*-backups
