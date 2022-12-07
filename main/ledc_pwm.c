@@ -40,14 +40,14 @@ void ledc_pwm_config(void) {
     .timer_sel  = LEDC_TIMER_1
   };
 
-  ledc_channel_config_t ledc_channel_7 = {
-    .channel    = LEDC_CHANNEL_7,
-    .duty       = 1 << 15,
-    .gpio_num   = OSC40K,
-    .speed_mode = LEDC_LOW_SPEED_MODE,
-    .hpoint     = 0,
-    .timer_sel  = LEDC_TIMER_1
-  };
+  /* ledc_channel_config_t ledc_channel_7 = { */
+  /*   .channel    = LEDC_CHANNEL_7, */
+  /*   .duty       = 1 << 15, */
+  /*   .gpio_num   = OSC40K, */
+  /*   .speed_mode = LEDC_LOW_SPEED_MODE, */
+  /*   .hpoint     = 0, */
+  /*   .timer_sel  = LEDC_TIMER_1 */
+  /* }; */
 
   ledc_channel_config_t ledc_channel_1 = {
     .channel    = LEDC_CHANNEL_1,

@@ -201,7 +201,6 @@ void eval_triggers(void * pvParams) {
     gpio_set_level(SIGAD, 0);
 
     alpha = 180.0f * val / (1 << 12);
-    alpha = 60.0f;
     cnt_max_e = cnt_max;
     /* verify if it detected the first sync pulse */
     if (cnt_max_e != 0) {
@@ -271,7 +270,6 @@ void app_main()
 
   /* TODO: clear this */
   /* alpha for test purposes */
-  alpha = 120;
 
   xTaskCreate(led_task, "led_task", 4096, NULL, 5, NULL);
   xTaskCreate(eval_triggers, "eval_triggers", 4096, NULL, 4, NULL);

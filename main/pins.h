@@ -12,10 +12,10 @@
 #define LED_GPIO 2
 #define OSC60 15
 #define OSC40K 16
-#define GATE1 17
+#define GATE1 05
 #define GATE3 18
 #define GATE5 19
-#define GATE4 25
+#define GATE4 33
 #define GATE6 26
 #define GATE2 27
 
